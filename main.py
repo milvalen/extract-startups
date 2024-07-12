@@ -54,6 +54,7 @@ def process_dir(path):
 
     for root, _, files in os.walk(path):
         for file in files:
+            print(file)
             if file.endswith('.docx'):
                 word_path = os.path.join(root, file)
                 if isinstance(word_path, str):
