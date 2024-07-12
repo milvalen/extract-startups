@@ -14,9 +14,18 @@
 
 ### 1. Установка необходимых пакетов
 ```
-sudo pip install python-docx openpyxl
+sudo pip3 install python-docx openpyxl
 ```
-### 2. Запуск скрипта
+
+### 2. Создание директорий `data` и `output`
+```
+sudo mkdir data
+sudo mkdir output
+```
+
+Импортируйте файлы отчетности в формате `.docx` в директорию `data`
+
+### 4. Запуск скрипта
 ```
 sudo python3 main.py
 ```
