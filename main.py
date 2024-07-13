@@ -5,20 +5,24 @@ from openpyxl import Workbook
 
 PATH = './data/'
 OUTPUT_PATH = './output/res.xlsx'
+SEPARATOR = 'ПАСПОРТ СТАРТАП-ПРОЕКТА'
+BREAK = '-textbreak-'
+NAME_KEY = 'Название стартап-проекта*'
 
 
 def extract_startups(text):
     startups = []
-    print(len(text.split('ПАСПОРТ СТАРТАП-ПРОЕКТА')))
-    for passport in text.split('ПАСПОРТ СТАРТАП-ПРОЕКТА'):
+    print(len(text.split(SEPARATOR)))
+    for passport in text.split(SEPARATOR):
         startup = {'Название стартап-проекта': '', 'Ссылка': ''}
-        for text in passport.split('-textbreak-'):
-            if 'https://pt.2035.university/project/' in ''.join(text):
-                startup['Ссылка'] = ''.join(text).replace(' ', '').split('\t')[0]
-                print(startup['Ссылка'])
-            elif 'Название стартап-проекта*' in ''.join(text):
-                startup['Название стартап-проекта'] = passport.split('-textbreak-')[
-                    passport.split('-textbreak-').index('Название стартап-проекта*') + 1]
+
+        passport_parts = passport.split(BREAK)
+        for part in passport_parts:
+            if 'https://pt.2035.university/project/' in ''.join(part):
+                startup['Ссылка'] = ''.join(part).replace(' ', '').split('\t')[0]
+            elif NAME_KEY in ''.join(part):
+                startup['Название стартап-проекта'] = passport_parts[
+                    passport_parts.index(NAME_KEY) + 1]
         if startup['Название стартап-проекта']:
             print(startup)
             startups.append(startup)
@@ -36,14 +40,15 @@ def extract_text_in_order(docs):
     for doc in docs:
         for block in iter_block_items(doc):
             if type(block).__name__ == 'CT_P':
-                full_text.append(block.text + '-textbreak-')
+                full_text.append(block.text.replace(
+                    'Паспорт стартап-проекта', SEPARATOR) + BREAK)
             elif type(block).__name__ == 'CT_Tbl':
                 table_text = []
                 table = Table(block, doc)
                 for row in table.rows:
                     for cell in row.cells:
                         for paragraph in cell.paragraphs:
-                            table_text.append(paragraph.text + '-textbreak-')
+                            table_text.append(paragraph.text + BREAK)
                 full_text.append(''.join(table_text))
 
     return extract_startups(''.join(full_text))
