@@ -21,7 +21,42 @@ def extract_startups(text):
         for part in passport_parts:
             stripped_part = ''.join(part).replace(' ', '')
             if 'https://pt.2035' in stripped_part:
-                startup['Ссылка'] = stripped_part.replace('\xad', '-').split('\t')[0]
+                startup['Ссылка'] = (
+                    stripped_part
+                    .replace('\xad', '-')
+                    .replace('е', 'e')
+                    .replace('Т', 'T')
+                    .replace('у', 'y')
+                    .replace('о', 'o')
+                    .replace('р', 'p')
+                    .replace('А', 'A')
+                    .replace('а', 'a')
+                    .replace('Н', 'H')
+                    .replace('О', 'O')
+                    .replace('Р', 'P')
+                    .replace('К', 'K')
+                    .replace('Х', 'X')
+                    .replace('x', 'х')
+                    .replace('В', 'B')
+                    .replace('М', 'M')
+                    .replace('г', 'r')
+                    .replace('Р', 'P')
+                    .replace('С', 'C')
+                    .replace('с', 'c')
+                    .replace('Е', 'E')
+                    .replace('ь', 'b')
+                    .replace('т', 'T')
+                    .replace('п', 'n')
+                    .replace('У', 'Y')
+                    .replace('З', '3')
+                    .replace('з', '3')
+                    .replace('ш', 'w')
+                    .replace('Ш', 'W')
+                    .replace('Ы', 'bl')
+                    .replace('ы', 'bl')
+                    .replace('ц', 'u')
+                    .replace('Ц', 'U')
+                    .split('\t'))[0]
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
                 if next_line and not next_line[0].isdigit():
@@ -50,7 +85,7 @@ def extract_text_in_order(docs):
     for doc in docs:
         for block in iter_block_items(doc):
             if type(block).__name__ == 'CT_P':
-                # print(block.text)
+                print(block.text)
                 full_text.append(block.text.replace(
                     'Паспорт стартап-проекта', SEPARATOR) + BREAK)
             elif type(block).__name__ == 'CT_Tbl':
@@ -60,7 +95,7 @@ def extract_text_in_order(docs):
                     for cell in row.cells:
                         for paragraph in cell.paragraphs:
                             table_text.append(paragraph.text + BREAK)
-                            # print(paragraph.text)
+                            print(paragraph.text)
                 full_text.append(''.join(table_text))
 
     return extract_startups(''.join(full_text))
