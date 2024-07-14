@@ -20,6 +20,10 @@ def extract_startups(text):
         for part in passport_parts:
             if 'https://pt.2035.university/project/' in ''.join(part):
                 startup['Ссылка'] = ''.join(part).replace(' ', '').split('\t')[0]
+
+                next_line = passport_parts[passport_parts.index(part) + 1]
+                if next_line and not next_line[0].isdigit():
+                    startup['Ссылка'] += next_line
             elif NAME_KEY in ''.join(part):
                 startup['Название стартап-проекта'] = passport_parts[
                     passport_parts.index(NAME_KEY) + 1]
@@ -40,6 +44,7 @@ def extract_text_in_order(docs):
     for doc in docs:
         for block in iter_block_items(doc):
             if type(block).__name__ == 'CT_P':
+                # print(block.text)
                 full_text.append(block.text.replace(
                     'Паспорт стартап-проекта', SEPARATOR) + BREAK)
             elif type(block).__name__ == 'CT_Tbl':
@@ -49,6 +54,7 @@ def extract_text_in_order(docs):
                     for cell in row.cells:
                         for paragraph in cell.paragraphs:
                             table_text.append(paragraph.text + BREAK)
+                            # print(paragraph.text)
                 full_text.append(''.join(table_text))
 
     return extract_startups(''.join(full_text))
