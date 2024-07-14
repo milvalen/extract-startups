@@ -20,7 +20,7 @@ def extract_startups(text):
         passport_parts = passport.split(BREAK)
         for part in passport_parts:
             stripped_part = ''.join(part).replace(' ', '')
-            if 'https://pt.2035.university/project/' in stripped_part:
+            if 'https://pt.2035' in stripped_part:
                 startup['Ссылка'] = stripped_part.replace('\xad', '-').split('\t')[0]
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
