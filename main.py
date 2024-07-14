@@ -56,6 +56,7 @@ def extract_startups(text):
                     .replace('ы', 'bl')
                     .replace('ц', 'u')
                     .replace('Ц', 'U')
+                    .replace('Ь', 'b')
                     .split('\t'))[0]
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
