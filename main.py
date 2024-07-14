@@ -12,21 +12,27 @@ NAME_KEY = 'Название стартап-проекта*'
 
 def extract_startups(text):
     startups = []
+
     print(len(text.split(SEPARATOR)))
     for passport in text.split(SEPARATOR):
         startup = {'Название стартап-проекта': '', 'Ссылка': ''}
 
         passport_parts = passport.split(BREAK)
         for part in passport_parts:
-            if 'https://pt.2035.university/project/' in ''.join(part):
-                startup['Ссылка'] = ''.join(part).replace(' ', '').split('\t')[0]
+            stripped_part = ''.join(part).replace(' ', '')
+            if 'https://pt.2035.university/project/' in stripped_part:
+                startup['Ссылка'] = stripped_part.replace('\xad', '-').split('\t')[0]
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
                 if next_line and not next_line[0].isdigit():
                     startup['Ссылка'] += next_line
             elif NAME_KEY in ''.join(part):
-                startup['Название стартап-проекта'] = passport_parts[
-                    passport_parts.index(NAME_KEY) + 1]
+                name_key_index = passport_parts.index(NAME_KEY)
+                name_shift = 1
+                while not passport_parts[name_key_index + name_shift]:
+                    name_shift += 1
+                startup['Название стартап-проекта'] = passport_parts[name_key_index + name_shift]
+
         if startup['Название стартап-проекта']:
             print(startup)
             startups.append(startup)
