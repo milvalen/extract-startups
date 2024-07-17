@@ -93,11 +93,17 @@ def extract_text_in_order(docs):
                 table_text = []
                 table = Table(block, doc)
                 for row in table.rows:
+                    prior_tc = None
                     for cell in row.cells:
+                        if cell._tc == prior_tc:
+                            continue
+                        prior_tc = cell._tc
                         for paragraph in cell.paragraphs:
                             table_text.append(paragraph.text + BREAK)
                             print(paragraph.text)
+
                 full_text.append(''.join(table_text))
+
 
     return extract_startups(''.join(full_text))
 
