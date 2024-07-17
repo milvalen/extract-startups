@@ -13,6 +13,8 @@ NAME_KEY = 'Название стартап-проекта*'
 def extract_startups(text):
     startups = []
 
+    if len(text.split(SEPARATOR)) < 2:
+        text = text.replace('Тема стартап-проекта*', SEPARATOR)
     print(len(text.split(SEPARATOR)))
     for passport in text.split(SEPARATOR):
         startup = {'Название стартап-проекта': '', 'Ссылка': ''}
@@ -85,11 +87,7 @@ def extract_text_in_order(docs):
     full_text = []
     for doc in docs:
         for block in iter_block_items(doc):
-            if type(block).__name__ == 'CT_P':
-                print(block.text)
-                full_text.append(block.text.replace(
-                    'Паспорт стартап-проекта', SEPARATOR) + BREAK)
-            elif type(block).__name__ == 'CT_Tbl':
+            if type(block).__name__ == 'CT_Tbl':
                 table_text = []
                 table = Table(block, doc)
                 for row in table.rows:
@@ -103,7 +101,10 @@ def extract_text_in_order(docs):
                             print(paragraph.text)
 
                 full_text.append(''.join(table_text))
-
+            elif block.text:
+                print(block.text)
+                full_text.append(block.text.replace(
+                    'Паспорт стартап-проекта', SEPARATOR) + BREAK)
 
     return extract_startups(''.join(full_text))
 
