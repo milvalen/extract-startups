@@ -26,6 +26,7 @@ def extract_startups(text):
                 startup['Ссылка'] = (
                     stripped_part
                     .replace('\xad', '-')
+                    .replace('\\', 'l')
                     .replace('е', 'e')
                     .replace('Т', 'T')
                     .replace('у', 'y')
@@ -38,7 +39,7 @@ def extract_startups(text):
                     .replace('Р', 'P')
                     .replace('К', 'K')
                     .replace('Х', 'X')
-                    .replace('x', 'х')
+                    .replace('х', 'x')
                     .replace('В', 'B')
                     .replace('М', 'M')
                     .replace('г', 'r')
@@ -62,7 +63,7 @@ def extract_startups(text):
                     .split('\t'))[0]
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
-                if next_line and not next_line[0].isdigit():
+                if next_line and not next_line[0].isdigit() and not next_line.startswith('Наименование'):
                     startup['Ссылка'] += next_line
             elif NAME_KEY in ''.join(part):
                 name_key_index = passport_parts.index(NAME_KEY)
