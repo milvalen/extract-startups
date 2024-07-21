@@ -1,4 +1,5 @@
 import os
+import requests
 from docx import Document
 from docx.table import Table
 from openpyxl import Workbook
@@ -10,7 +11,19 @@ BREAK = '-textbreak-'
 NAME_KEY = 'Название стартап-проекта*'
 
 
+def check_url(url):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+
+
 def extract_startups(text):
+    links_num = 0
     startups = []
 
     if len(text.split(SEPARATOR)) < 2:
@@ -21,46 +34,47 @@ def extract_startups(text):
 
         passport_parts = passport.split(BREAK)
         for part in passport_parts:
-            stripped_part = ''.join(part).replace(' ', '')
+            stripped_part = (
+                ''.join(part)
+                .replace(' ', '')
+                .replace('\xad', '-')
+                .replace('\\', 'l')
+                .replace('е', 'e')
+                .replace('Т', 'T')
+                .replace('у', 'y')
+                .replace('о', 'o')
+                .replace('р', 'p')
+                .replace('А', 'A')
+                .replace('а', 'a')
+                .replace('Н', 'H')
+                .replace('О', 'O')
+                .replace('Р', 'P')
+                .replace('К', 'K')
+                .replace('Х', 'X')
+                .replace('х', 'x')
+                .replace('В', 'B')
+                .replace('М', 'M')
+                .replace('г', 'r')
+                .replace('Р', 'P')
+                .replace('С', 'C')
+                .replace('с', 'c')
+                .replace('Е', 'E')
+                .replace('ь', 'b')
+                .replace('т', 'T')
+                .replace('п', 'n')
+                .replace('У', 'Y')
+                .replace('З', '3')
+                .replace('з', '3')
+                .replace('ш', 'w')
+                .replace('Ш', 'W')
+                .replace('Ы', 'bl')
+                .replace('ы', 'bl')
+                .replace('ц', 'u')
+                .replace('Ц', 'U')
+                .replace('Ь', 'b')
+                .split('\t'))[0]
             if 'https://pt.2035' in stripped_part:
-                startup['Ссылка'] = (
-                    stripped_part
-                    .replace('\xad', '-')
-                    .replace('\\', 'l')
-                    .replace('е', 'e')
-                    .replace('Т', 'T')
-                    .replace('у', 'y')
-                    .replace('о', 'o')
-                    .replace('р', 'p')
-                    .replace('А', 'A')
-                    .replace('а', 'a')
-                    .replace('Н', 'H')
-                    .replace('О', 'O')
-                    .replace('Р', 'P')
-                    .replace('К', 'K')
-                    .replace('Х', 'X')
-                    .replace('х', 'x')
-                    .replace('В', 'B')
-                    .replace('М', 'M')
-                    .replace('г', 'r')
-                    .replace('Р', 'P')
-                    .replace('С', 'C')
-                    .replace('с', 'c')
-                    .replace('Е', 'E')
-                    .replace('ь', 'b')
-                    .replace('т', 'T')
-                    .replace('п', 'n')
-                    .replace('У', 'Y')
-                    .replace('З', '3')
-                    .replace('з', '3')
-                    .replace('ш', 'w')
-                    .replace('Ш', 'W')
-                    .replace('Ы', 'bl')
-                    .replace('ы', 'bl')
-                    .replace('ц', 'u')
-                    .replace('Ц', 'U')
-                    .replace('Ь', 'b')
-                    .split('\t'))[0]
+                startup['Ссылка'] = stripped_part
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
                 if next_line and not next_line[0].isdigit() and not next_line.startswith('Наименование'):
@@ -73,8 +87,18 @@ def extract_startups(text):
                 startup['Название стартап-проекта'] = passport_parts[name_key_index + name_shift]
 
         if startup['Название стартап-проекта']:
-            print(startup)
             startups.append(startup)
+            print(startup)
+            if startup['Ссылка']:
+                links_num += 1
+    print('\nПроверяются ссылки...')
+
+    for startup in startups:
+        if startup['Ссылка'] and not check_url(startup['Ссылка']):
+            print('Нерабочая ссылка', startup)
+
+    startups_num = len(startups)
+    print('\n{} строк, {} из них без ссылок'.format(startups_num, startups_num - links_num))
 
     return startups
 
@@ -99,11 +123,11 @@ def extract_text_in_order(docs):
                         prior_tc = cell._tc
                         for paragraph in cell.paragraphs:
                             table_text.append(paragraph.text + BREAK)
-                            print(paragraph.text)
+                            # print(paragraph.text)
 
                 full_text.append(''.join(table_text))
             elif block.text:
-                print(block.text)
+                # print(block.text)
                 full_text.append(block.text.replace(
                     'Паспорт стартап-проекта', SEPARATOR) + BREAK)
 
