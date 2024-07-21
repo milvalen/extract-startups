@@ -73,11 +73,14 @@ def extract_startups(text):
                 .replace('Ц', 'U')
                 .replace('Ь', 'b')
                 .split('\t'))[0]
-            if 'https://pt.2035' in stripped_part:
+            if 'https://pt.2035' in stripped_part and not startup['Ссылка']:
                 startup['Ссылка'] = stripped_part
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
-                if next_line and not next_line[0].isdigit() and not next_line.startswith('Наименование'):
+                if stripped_part.endswith('-') \
+                        and next_line \
+                        and not next_line[0].isdigit() \
+                        and not next_line.startswith('Наименование'):
                     startup['Ссылка'] += next_line
             elif NAME_KEY in ''.join(part):
                 name_key_index = passport_parts.index(NAME_KEY)
@@ -95,7 +98,7 @@ def extract_startups(text):
 
     for startup in startups:
         if startup['Ссылка'] and not check_url(startup['Ссылка']):
-            print('Нерабочая ссылка', startup)
+            print('Нерабочая ссылка -', startup)
 
     startups_num = len(startups)
     print('\n{} строк, {} из них без ссылок'.format(startups_num, startups_num - links_num))
