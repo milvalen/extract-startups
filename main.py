@@ -8,7 +8,6 @@ PATH = './data/'
 OUTPUT_PATH = './output/res.xlsx'
 SEPARATOR = 'ПАСПОРТ СТАРТАП-ПРОЕКТА'
 BREAK = '-textbreak-'
-NAME_KEY = 'Название стартап-проекта*'
 
 
 def check_url(url):
@@ -34,10 +33,11 @@ def extract_startups(text):
 
         passport_parts = passport.split(BREAK)
         for part in passport_parts:
-            stripped_part = (
-                ''.join(part)
+            joined_part = ''.join(part)
+            refined_part = (
+                joined_part
                 .replace(' ', '')
-                .replace('\xad', '-')
+                .replace('\xad', '')
                 .replace('\\', 'l')
                 .replace('е', 'e')
                 .replace('Т', 'T')
@@ -73,21 +73,22 @@ def extract_startups(text):
                 .replace('Ц', 'U')
                 .replace('Ь', 'b')
                 .split('\t'))[0]
-            if 'https://pt.2035' in stripped_part and not startup['Ссылка']:
-                startup['Ссылка'] = stripped_part
+            if 'https://pt.2035' in refined_part and not startup['Ссылка']:
+                startup['Ссылка'] = refined_part
 
                 next_line = passport_parts[passport_parts.index(part) + 1]
-                if stripped_part.endswith('-') \
+                if refined_part.endswith('-') \
                         and next_line \
-                        and not next_line[0].isdigit() \
-                        and not next_line.startswith('Наименование'):
+                        and not (next_line[0].isdigit()
+                                 or next_line.startswith('Наименование')
+                                 or next_line.startswith('Тема стартап-проекта')):
                     startup['Ссылка'] += next_line
-            elif NAME_KEY in ''.join(part):
-                name_key_index = passport_parts.index(NAME_KEY)
+            elif 'Название стартап-проекта*' in joined_part:
+                part_index = passport_parts.index(part)
                 name_shift = 1
-                while not passport_parts[name_key_index + name_shift]:
+                while not passport_parts[part_index + name_shift]:
                     name_shift += 1
-                startup['Название стартап-проекта'] = passport_parts[name_key_index + name_shift]
+                startup['Название стартап-проекта'] = passport_parts[part_index + name_shift].replace('\t', '')
 
         if startup['Название стартап-проекта']:
             startups.append(startup)
@@ -142,8 +143,8 @@ def process_dir(path):
 
     for root, _, files in os.walk(path):
         for file in files:
-            print(file)
             if file.endswith('.docx'):
+                print(file)
                 word_path = os.path.join(root, file)
                 if isinstance(word_path, str):
                     docs.append(Document(word_path))
