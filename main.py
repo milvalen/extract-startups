@@ -37,6 +37,7 @@ def extract_startups(text):
             refined_part = (
                 joined_part
                 .replace(' ', '')
+                .replace(',', '.')
                 .replace('\xad', '')
                 .replace('\\', 'l')
                 .replace('е', 'e')
@@ -75,20 +76,22 @@ def extract_startups(text):
                 .split('\t'))[0]
             if 'https://pt.2035' in refined_part and not startup['Ссылка']:
                 startup['Ссылка'] = refined_part
-
                 next_line = passport_parts[passport_parts.index(part) + 1]
+
                 if refined_part.endswith('-') \
                         and next_line \
-                        and not (next_line[0].isdigit()
-                                 or next_line.startswith('Наименование')
-                                 or next_line.startswith('Тема стартап-проекта')):
+                        and not (next_line[0].isdigit() or next_line.startswith('Наименование')):
                     startup['Ссылка'] += next_line
             elif 'Название стартап-проекта*' in joined_part:
                 part_index = passport_parts.index(part)
                 name_shift = 1
+
                 while not passport_parts[part_index + name_shift]:
                     name_shift += 1
-                startup['Название стартап-проекта'] = passport_parts[part_index + name_shift].replace('\t', '')
+
+                startup_name = passport_parts[part_index + name_shift].replace('\t', '')
+                if not startup_name.endswith('*'):
+                    startup['Название стартап-проекта'] = startup_name
 
         if startup['Название стартап-проекта']:
             startups.append(startup)
